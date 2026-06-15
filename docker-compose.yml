@@ -1,0 +1,44 @@
+services:
+  jitsi:
+    image: docker.io/dbndev/jitsi:latest
+    build:
+      context: .
+    container_name: jitsi-server
+    privileged: true
+    restart: unless-stopped
+    environment:
+      LOCAL_JITSI_CONTAINER_INSTALL: "true"
+      LOCAL_JITSI_DIR: /home/debian/docker-jitsi-meet
+      CONTAINER_CACHE: /home/debian/.cache/jitsi
+      HTTP_PORT: "8000"
+      HTTPS_PORT: "8443"
+      PUBLIC_URL: "https://meet.vegito.app:8443"
+      DOCKER_HOST: unix:///run/user/1000/docker.sock
+      DOCKER_BUILDKIT: "1"
+    ports:
+      - "8000:8000/tcp"
+      - "58000:58080/tcp"
+      - "8443:8443/tcp"
+      - "10000:10000/udp"
+    volumes:
+      - jitsi-cache:/home/debian/.cache/jitsi
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - vscode-store:/vscode
+    networks:
+      - stream
+    extra_hosts:
+      - "meet.vegito.app:10.5.5.7"
+    # dns:
+    #   - ${VEGITO_DNS_SERVER:-10.5.5.7}
+    entrypoint: bash
+    command: -c 'sleep infinity'
+
+volumes:
+  jitsi-cache:
+  jitsi-docker:
+  vscode-store:
+    external: true
+    name: vscode
+
+networks:
+  stream:
