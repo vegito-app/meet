@@ -1,5 +1,6 @@
-# Vegito Jitsi Server
+[![Docker Image CI](https://github.com/vegito-app/jitsi/actions/workflows/docker-image.yml/badge.svg)](https://github.com/vegito-app/jitsi/actions/workflows/docker-image.yml)
 
+# Vegito Jitsi Server
 
 Portable Jitsi server packaged as a single Docker container using Docker-in-Docker (DIND) and Rootless Docker.
 
