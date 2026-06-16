@@ -1,8 +1,16 @@
 # Vegito Jitsi Server
 
+
 Portable Jitsi server packaged as a single Docker container using Docker-in-Docker (DIND) and Rootless Docker.
 
 This project encapsulates a full `docker-jitsi-meet` deployment inside an isolated container while keeping persistent state and reproducible deployments.
+
+## Quick Start
+
+```bash
+make server-up
+open https://meet.vegito.app:8443
+```
 
 ## Features
 
@@ -18,6 +26,10 @@ This project encapsulates a full `docker-jitsi-meet` deployment inside an isolat
 - 🧹 Cache cleanup support
 - 🔁 Fully reproducible deployments
 - 🧪 Isolated from the host Docker installation
+
+## Screenshot
+
+_Add a screenshot of a running Jitsi instance here._
 
 ## Architecture
 
@@ -61,26 +73,28 @@ The objective is to package an entire Jitsi infrastructure into a portable and r
 └── README.md
 ```
 
-## Persistent Data
+## Persistence
 
-The following data are persisted:
+Persistent state is stored inside Docker volumes.
 
-- Jitsi cache
-- Docker images and layers
-- docker-jitsi-meet checkout
-- generated secrets
-- certificates
-- shell history
-
-Typical mount:
+Primary cache location:
 
 ```text
 /home/debian/.cache/jitsi
 ```
 
+Persisted data include:
+
+- docker-jitsi-meet checkout
+- inner Docker images and layers
+- generated secrets
+- shell history
+- Jitsi runtime configuration
+- Rootless Docker state
+
 ## Docker Volumes
 
-This project intentionally persists its state through Docker volumes.
+This project intentionally persists its entire runtime through Docker volumes.
 
 Example:
 
@@ -151,6 +165,8 @@ HTTPS_PORT=8443
 PUBLIC_URL=https://meet.vegito.app:8443
 ```
 
+Changing `JITSI_DOMAIN` impacts DNS resolution, certificates and the advertised WebRTC URL.
+
 ## Make Targets
 
 Examples:
@@ -209,7 +225,13 @@ Example domain:
 https://meet.vegito.app
 ```
 
-## Debugging Story
+## Why DIND?
+
+Most Jitsi deployments rely on direct host installation or Kubernetes.
+
+This project instead packages the entire infrastructure inside a portable appliance that can be moved, backed up and restored with minimal host dependencies.
+
+## Upstream Compatibility Notes
 
 A subtle upstream change caused XMPP BOSH requests to target:
 
