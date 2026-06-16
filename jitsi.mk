@@ -28,7 +28,7 @@ jitsi-server-container-up: jitsi-server-container-rm
 .PHONY: jitsi-server-container-up
 
 jitsi-server-container-rm:
-	@docker rm -f jitsi-server 2>/dev/null || true
+	@docker rm -f jitsi 2>/dev/null || true
 .PHONY: jitsi-server-container-rm
 
 jitsi-server-cert-install:
@@ -41,3 +41,22 @@ jitsi-server-cert-install:
 jitsi-server-cert-renew:
 	@sudo certbot renew
 .PHONY: jitsi-server-cert-renew
+
+jitsi-server-reset:
+	@$(MAKE) jitsi-server-down
+	@docker volume rm -f jitsi_jitsi-cache 2>/dev/null || true
+	@$(MAKE) jitsi-server-up
+.PHONY: jitsi-server-reset
+
+jitsi-server-cache-clean:
+	@echo "🧹 Cleaning Jitsi caches..."
+	@-docker exec jitsi-server bash -lc '\
+	 rm -rf ~/.cache/jitsi ~/.cache/dockerd ~/docker-jitsi-meet ~/.jitsi-meet-cfg \
+	'
+.PHONY: jitsi-server-cache-clean
+
+jitsi-server-rebuild:
+	@$(MAKE) jitsi-server-container-rm
+	@$(MAKE) jitsi-server-build
+	@$(MAKE) jitsi-server-container-up
+.PHONY: jitsi-server-rebuild

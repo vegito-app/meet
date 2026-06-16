@@ -19,6 +19,8 @@ jitsi_config_dir=${JITSI_CONFIG_DIR:-${HOME}/.jitsi-meet-cfg}
 jitsi_domain=${JITSI_DOMAIN:-meet.vegito.app}
 
 mkdir -p "${local_container_cache}"
+mkdir -p "${local_container_cache}/docker-jitsi-meet"
+mkdir -p "${local_container_cache}/.docker"
 echo "📦 Jitsi cache directory: ${local_container_cache}"
 echo "📁 Jitsi config directory: ${jitsi_config_dir}"
 echo "🌐 Jitsi domain: ${jitsi_domain}"
@@ -36,6 +38,11 @@ ln -sfn "${local_container_cache}/.bash_history" "${bash_history_path}"
 
 echo "🎥 Configuring persistent Jitsi state..."
 mkdir -p "${local_container_cache}/.jitsi-meet-cfg"
+
+rm -rf "${jitsi_dir}"
+ln -sfn \
+  "${local_container_cache}/docker-jitsi-meet" \
+  "${jitsi_dir}"
 
 rm -rf "${HOME}/.jitsi-meet-cfg"
 ln -sfn \
@@ -96,8 +103,10 @@ jitsi_commit="${JITSI_COMMIT:-}"
 
 if [ -n "${jitsi_commit}" ]; then
   echo "📌 Checkout Jitsi commit ${jitsi_commit}"
-  git fetch --all --tags
+  git fetch --all --tags --prune
   git checkout "${jitsi_commit}"
+else
+  echo "📌 No JITSI_COMMIT specified, keeping current checkout"
 fi
 if [ ! -f .env ]; then
   cp env.example .env
@@ -142,6 +151,12 @@ mkdir -p \
 if ! grep -q '^JICOFO_AUTH_PASSWORD=.' .env 2>/dev/null; then
   echo "🔑 Generating Jitsi secrets..."
   ./gen-passwords.sh
+fi
+
+if git diff --quiet; then
+  echo "📄 Git checkout is clean"
+else
+  echo "⚠️ Local modifications detected in docker-jitsi-meet"
 fi
 
 echo "✅ Jitsi initialization completed"
