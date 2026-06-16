@@ -15,7 +15,7 @@ jitsi-server-logs:
 .PHONY: jitsi-server-logs
 
 jitsi-server-down:
-	@$(DOCKER_COMPOSE) down
+	@$(DOCKER_COMPOSE) down jitsi
 .PHONY: jitsi-server-down
 
 jitsi-server-shell:
@@ -32,13 +32,12 @@ jitsi-server-container-rm:
 .PHONY: jitsi-server-container-rm
 
 jitsi-server-cert-install:
-	
-.PHONY: jitsi-server-cert-install	
-
-jitsi-server-cert-renew:
 	@sudo certbot certonly \
 	  --manual \
 	  --preferred-challenges dns \
 	  -d meet.vegito.app
-.PHONY: jitsi-server-cert-renew
+.PHONY: jitsi-server-cert-install	
 
+jitsi-server-cert-renew:
+	@sudo certbot renew
+.PHONY: jitsi-server-cert-renew

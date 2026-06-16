@@ -17,18 +17,17 @@ DOCKER_COMPOSE = docker compose
 
 -include jitsi.mk
 
-server-up:
-	@$(DOCKER_COMPOSE) up -d jitsi
+server-build: jitsi-server-build
+.PHONY: server-build
+
+server-up: jitsi-server-up
 .PHONY: server-up
 
-server-logs:
-	@$(DOCKER_COMPOSE) logs -f jitsi
+server-logs: jitsi-server-logs
 .PHONY: server-logs
 
-server-down:
-	@$(DOCKER_COMPOSE) down
+server-down: jitsi-server-down
 .PHONY: server-down
 
-server-shell:
-	@$(DOCKER_COMPOSE) exec jitsi bash
+server-shell: jitsi-server-shell
 .PHONY: server-shell
