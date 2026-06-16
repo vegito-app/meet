@@ -29,7 +29,7 @@ open https://meet.vegito.app:8443
 
 ## Screenshot
 
-_Add a screenshot of a running Jitsi instance here._
+<img width="1039" height="900" alt="Image" src="https://github.com/user-attachments/assets/37baf0d0-8786-488a-8b0c-9134dcce5b27" />
 
 ## Architecture
 
