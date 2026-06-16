@@ -28,7 +28,7 @@ jitsi-server-shell:
 
 jitsi-server-container-up:
 	@echo "🚀 Starting Jitsi server container..."
-	@$(JITSI_DIR)/container-up.sh
+	@$(JITSI_DIR)/docker-compose-up.sh
 .PHONY: jitsi-server-container-up
 
 jitsi-server-container-rm:
