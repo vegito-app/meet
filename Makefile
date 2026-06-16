@@ -17,8 +17,11 @@ DOCKER_COMPOSE = docker compose
 
 -include jitsi.mk
 
-server-build: jitsi-server-build
+server-build: jitsi-server-build-image
 .PHONY: server-build
+
+server-push: jitsi-server-push-image
+.PHONY: server-push
 
 server-up: jitsi-server-up
 .PHONY: server-up
@@ -32,11 +35,19 @@ server-down: jitsi-server-down
 server-shell: jitsi-server-shell
 .PHONY: server-shell
 
-server-restart: jitsi-server-down jitsi-server-up
-.PHONY: server-restart
-
-server-rebuild: jitsi-server-rebuild
+server-restart:
+	@$(MAKE) jitsi-server-container-rm
+	@$(MAKE) jitsi-server-container-up
 .PHONY: server-rebuild
 
-server-reset: jitsi-server-reset
+server-rebuild:
+	@$(MAKE) jitsi-server-container-rm
+	@$(MAKE) jitsi-server-build
+	@$(MAKE) jitsi-server-container-up
+.PHONY: server-rebuild
+
+server-reset:
+	@$(MAKE) jitsi-server-down
+	@$(MAKE) jitsi-server-cache-clean
+	@$(MAKE) jitsi-server-up
 .PHONY: server-reset

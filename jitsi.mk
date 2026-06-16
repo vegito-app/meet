@@ -2,9 +2,13 @@ export JITSI_DIR ?= $(CURDIR)
 
 DOCKER_COMPOSE = docker compose
 
-jitsi-server-build:
+jitsi-server-build-image:
 	@$(DOCKER_COMPOSE) build jitsi
-.PHONY: jitsi-server-build
+.PHONY: jitsi-server-build-image
+
+jitsi-server-push-image:
+	@$(DOCKER_COMPOSE) push-image jitsi
+.PHONY: jitsi-server-push-image
 
 jitsi-server-up:
 	@$(DOCKER_COMPOSE) up -d jitsi
@@ -19,10 +23,10 @@ jitsi-server-down:
 .PHONY: jitsi-server-down
 
 jitsi-server-shell:
-	@$(DOCKER_COMPOSE) exec jitsi bash
+	@$(DOCKER_COMPOSE) exec -it jitsi bash
 .PHONY: jitsi-server-shell
 
-jitsi-server-container-up: jitsi-server-container-rm
+jitsi-server-container-up:
 	@echo "🚀 Starting Jitsi server container..."
 	@$(JITSI_DIR)/container-up.sh
 .PHONY: jitsi-server-container-up
@@ -42,21 +46,7 @@ jitsi-server-cert-renew:
 	@sudo certbot renew
 .PHONY: jitsi-server-cert-renew
 
-jitsi-server-reset:
-	@$(MAKE) jitsi-server-down
-	@docker volume rm -f jitsi_jitsi-cache 2>/dev/null || true
-	@$(MAKE) jitsi-server-up
-.PHONY: jitsi-server-reset
-
 jitsi-server-cache-clean:
 	@echo "🧹 Cleaning Jitsi caches..."
-	@-docker exec jitsi-server bash -lc '\
-	 rm -rf ~/.cache/jitsi ~/.cache/dockerd ~/docker-jitsi-meet ~/.jitsi-meet-cfg \
-	'
+	@docker volume rm -f jitsi_jitsi-cache 2>/dev/null || true
 .PHONY: jitsi-server-cache-clean
-
-jitsi-server-rebuild:
-	@$(MAKE) jitsi-server-container-rm
-	@$(MAKE) jitsi-server-build
-	@$(MAKE) jitsi-server-container-up
-.PHONY: jitsi-server-rebuild
