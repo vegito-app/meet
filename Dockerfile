@@ -46,9 +46,12 @@ WORKDIR ${HOME}
 COPY container-entrypoint.sh /usr/local/bin/jitsi-container-entrypoint.sh
 COPY container-install.sh /usr/local/bin/jitsi-container-install.sh
 COPY container-start.sh /usr/local/bin/jitsi-container-start.sh
+COPY container-healthcheck.sh /usr/local/bin/jitsi-container-healthcheck.sh
 
 ENTRYPOINT [ "tini", "--", "jitsi-container-entrypoint.sh" ]
+
 CMD [ "jitsi-container-start.sh" ]
-HEALTHCHECK CMD test -f /tmp/.jitsi-runtime-ready || exit 1
+
+HEALTHCHECK CMD /usr/local/bin/jitsi-container-healthcheck.sh
 
 RUN mkdir -p  /home/debian/.cache/jitsi /home/debian/.local/share/docker

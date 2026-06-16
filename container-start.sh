@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-READY_FILE=/tmp/.jitsi-server-runtime-ready
+READY_FILE=/tmp/.jitsi-server-ready
 rm -f "${READY_FILE}"
 
 bg_pids=()
@@ -17,7 +17,7 @@ kill_jobs() {
 
 trap kill_jobs EXIT
 
-echo "📹 Starting Jitsi runtime..."
+echo "📹 Starting Jitsi server..."
 
 debian-dind-rootless-start.sh &
 bg_pids+=("$!")
@@ -48,5 +48,5 @@ done
 
 echo "{\"status\":\"ready\",\"ts\":$(date +%s)}" > "${READY_FILE}"
 
-echo "✅ Jitsi runtime started successfully."
+echo "✅ Jitsi server started successfully."
 sleep infinity
