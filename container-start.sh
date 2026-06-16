@@ -29,8 +29,6 @@ done
 
 echo "✅ Rootless Docker is ready."
 
-jitsi-container-install.sh
-
 cd "${LOCAL_JITSI_DIR:-${HOME}/docker-jitsi-meet}"
 
 echo "🧹 Removing previous inner Jitsi stack if present..."
