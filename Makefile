@@ -31,3 +31,6 @@ server-down: jitsi-server-down
 
 server-shell: jitsi-server-shell
 .PHONY: server-shell
+
+server-restart: jitsi-server-down jitsi-server-up
+.PHONY: server-restart
