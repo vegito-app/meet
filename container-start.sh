@@ -31,6 +31,10 @@ echo "✅ Rootless Docker is ready."
 
 cd "${LOCAL_JITSI_DIR:-${HOME}/docker-jitsi-meet}"
 
+# Forward Docker DIND Rootless socket
+socat TCP-LISTEN:2376,fork UNIX-CONNECT:/run/user/1000/docker/docker.sock > /tmp/socat-docker-2376.log 2>&1 &
+bg_pids+=("$!")
+
 echo "🧹 Removing previous inner Jitsi stack if present..."
 docker compose down --remove-orphans || true
 
