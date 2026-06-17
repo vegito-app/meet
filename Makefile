@@ -23,7 +23,7 @@ server-build: jitsi-server-build-image
 server-push: jitsi-server-push-image
 .PHONY: server-push
 
-server-up: jitsi-server-up
+server-up: ensure-vscode-store-volume jitsi-server-up
 .PHONY: server-up
 
 server-logs: jitsi-server-logs
@@ -42,7 +42,7 @@ server-restart:
 
 server-rebuild:
 	@$(MAKE) jitsi-server-container-rm
-	@$(MAKE) jitsi-server-build
+	@$(MAKE) jitsi-server-build-image
 	@$(MAKE) jitsi-server-container-up
 .PHONY: server-rebuild
 
@@ -51,3 +51,8 @@ server-reset:
 	@$(MAKE) jitsi-server-cache-clean
 	@$(MAKE) jitsi-server-up
 .PHONY: server-reset
+
+ensure-vscode-store-volume:
+	@docker volume inspect vscode-store > /dev/null 2>&1 || docker volume create vscode-store
+	@echo "✅ Ensured VSCode store volume exists."
+.PHONY: ensure-vscode-store-volume

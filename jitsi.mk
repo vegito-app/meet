@@ -7,7 +7,7 @@ jitsi-server-build-image:
 .PHONY: jitsi-server-build-image
 
 jitsi-server-push-image:
-	@$(DOCKER_COMPOSE) push-image jitsi
+	@$(DOCKER_COMPOSE) push jitsi
 .PHONY: jitsi-server-push-image
 
 jitsi-server-up:
