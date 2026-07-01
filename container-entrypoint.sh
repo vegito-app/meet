@@ -10,4 +10,6 @@ if [ "${LOCAL_JITSI_CONTAINER_INSTALL:-true}" = "true" ]; then
     jitsi-container-install.sh
 fi
 
+echo "[entrypoint] Jitsi Meet installation completed"
+
 exec "$@"

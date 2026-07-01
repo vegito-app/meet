@@ -21,6 +21,7 @@ services:
       - "8000:8000/tcp"
       - "8443:8443/tcp"
       - "10000:10000/udp"
+
     volumes:
       - jitsi-cache:/home/debian/.cache/jitsi
       - /etc/letsencrypt:/etc/letsencrypt:ro
