@@ -1,4 +1,4 @@
-FROM dbndev/vegito-public:trixie-debian-docker-latest
+FROM dbndev/vegito-public:trixie-debian-dockerd-latest
 
 USER root
 
@@ -37,7 +37,7 @@ ENV USER=${non_root_user}
 ENV HOME=/home/debian
 ENV DOCKER_HOST=unix:///run/user/1000/docker.sock
 ENV DOCKER_BUILDKIT=1
-ENV LOCAL_JITSI_DIR=${HOME}/docker-jitsi-meet
+ENV LOCAL_DOCKER_JITSI_DIR=${HOME}/docker-jitsi-meet
 ENV CONTAINER_CACHE=${HOME}/.cache/jitsi
 ENV LOCAL_JITSI_CONTAINER_INSTALL=true
 

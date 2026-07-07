@@ -1,3 +1,9 @@
 ._*
 _*
 .vscode/
+.containers/
+.env
+.env.local
+.env.*
+!.env.example
+!.env.vegito-app
