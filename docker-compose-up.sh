@@ -4,15 +4,6 @@ set -euo pipefail
 
 CONTAINER_NAME="jitsi-server"
 
-JITSI_HTTP_PORT=${JITSI_HTTP_PORT:-8000}
-JITSI_HTTPS_PORT=${JITSI_HTTPS_PORT:-8443}
-JITSI_JVB_PORT=${JITSI_JVB_PORT:-10000}
-
-PORTS_TO_WAIT_FOR=(
-  "${JITSI_HTTP_PORT}"
-  "${JITSI_HTTPS_PORT}"
-)
-
 pids=()
 compose_pid=
 wait_pid=
@@ -33,15 +24,14 @@ docker_compose=${LOCAL_DOCKER_COMPOSE:-docker compose -f ${JITSI_DIR}/docker-com
 ${docker_compose} up jitsi 2>&1 &
 compose_pid=$!
 
+set +e
 {
-  for port in "${PORTS_TO_WAIT_FOR[@]}"; do
-    until nc -z "${CONTAINER_NAME}" "${port}"; do
-      echo "⏳ Waiting for ${CONTAINER_NAME} on TCP port ${port}..."
-      sleep 1
-    done
+  echo "⏱️ Waiting for Jitsi Server..."
+  until $docker_compose exec -T jitsi test -f /tmp/.jitsi-server-ready; do
+    echo "⏳ Waiting for jitsi-server to start..."
+    sleep 1
   done
-  echo "✅ ${CONTAINER_NAME} is reachable on HTTP/HTTPS ports."
-  echo "ℹ️ UDP ${JITSI_JVB_PORT} is exposed for WebRTC media but cannot be checked with nc -z TCP."
+  echo "✅ service jitsi-server ready"
 } &
 wait_pid=$!
 

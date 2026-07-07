@@ -8,30 +8,33 @@ services:
     restart: unless-stopped
     environment:
       LOCAL_JITSI_CONTAINER_INSTALL: "true"
-      LOCAL_JITSI_DIR: /home/debian/docker-jitsi-meet
-      CONTAINER_CACHE: /home/debian/.cache/jitsi
-      HTTP_PORT: "8000"
-      HTTPS_PORT: "8443"
-      JITSI_COMMIT: ${JITSI_COMMIT:-stable-11031}
-      PUBLIC_URL: "https://meet.vegito.app:8443"
+      LOCAL_DOCKER_JITSI_DIR: ${LOCAL_DOCKER_JITSI_DIR:-${PWD}/.containers}/docker-jitsi-meet
+      CONTAINER_CACHE: ${CONTAINER_CACHE:-${PWD}/.containers/jitsi}
+      JITSI_COMMIT: ${JITSI_COMMIT}
+      JVB_PORT: "${JITSI_JVB_PORT}"
+      HTTP_PORT: "${JITSI_HTTP_PORT}"
+      HTTPS_PORT: "${JITSI_HTTPS_PORT}"
+      JVB_ADVERTISE_IPS: ${JITSI_JVB_ADVERTISE_IPS}
+      PUBLIC_URL: "${JITSI_URL:-https://${JITSI_DOMAIN}}"
       DOCKER_HOST: unix:///run/user/1000/docker.sock
       DOCKER_BUILDKIT: "1"
     ports:
-      - "2376/tcp"
-      - "8000:8000/tcp"
-      - "8443:8443/tcp"
-      - "10000:10000/udp"
-
+      - "${JITSI_HTTP_PORT}:${JITSI_HTTP_PORT}/tcp"
+      - "${JITSI_HTTPS_PORT}:${JITSI_HTTPS_PORT}/tcp"
+      - "${JITSI_JVB_PORT}:${JITSI_JVB_PORT}/udp"
+    working_dir: ${PWD}
     volumes:
-      - jitsi-cache:/home/debian/.cache/jitsi
+      - ${PWD}:${PWD}
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - vscode-store:/vscode
     networks:
-      - stream
+      stream:
+        aliases:
+          - jitsi
     extra_hosts:
-      - "meet.vegito.app:10.5.5.7"
-    # dns:
-    #   - ${VEGITO_DNS_SERVER:-10.5.5.7}
+      - "${JITSI_DOMAIN}:${JITSI_IP}"
+    env_file:
+      - ${ENV_FILE:-.env}
 
 volumes:
   jitsi-cache:

@@ -11,38 +11,48 @@ check_success() {
     echo "❌ Jitsi caches refresh failed."
   fi
 }
+
 trap check_success EXIT
 
-local_container_cache=${CONTAINER_CACHE:-${HOME}/.cache/jitsi}
-jitsi_dir=${LOCAL_JITSI_DIR:-${HOME}/docker-jitsi-meet}
-jitsi_config_dir=${JITSI_CONFIG_DIR:-${HOME}/.jitsi-meet-cfg}
-jitsi_domain=${JITSI_DOMAIN:-meet.vegito.app}
+local_container_cache=${CONTAINER_CACHE:-${HOME}/.container/jitsi}
+
+local_docker_jitsi_meet_dir=${LOCAL_DOCKER_JITSI_DIR:-${local_container_cache}/docker-jitsi-meet}
 
 mkdir -p "${local_container_cache}"
-mkdir -p "${local_container_cache}/docker-jitsi-meet"
-mkdir -p "${local_container_cache}/.docker"
+
 echo "📦 Jitsi cache directory: ${local_container_cache}"
+
+jitsi_config_dir=${local_container_cache}/.jitsi-meet-cfg
+jitsi_domain=${JITSI_DOMAIN:-meet.vegito.app}
+
 echo "📁 Jitsi config directory: ${jitsi_config_dir}"
 echo "🌐 Jitsi domain: ${jitsi_domain}"
+
+mkdir -p "${local_container_cache}/.docker"
 mkdir -p "${local_container_cache}/dockerd"
+mkdir -p "${local_container_cache}/jitsi"
+
 mkdir -p "${HOME}/.local/share"
 
 echo "🐳 Configuring Docker cache..."
+
 rm -rf "${HOME}/.local/share/docker"
 ln -sfn "${local_container_cache}/dockerd" "${HOME}/.local/share/docker"
 
-bash_history_path=${HOME}/.bash_history
 echo "📜 Persisting shell history..."
+
+bash_history_path=${HOME}/.bash_history
 rm -f "${bash_history_path}"
 ln -sfn "${local_container_cache}/.bash_history" "${bash_history_path}"
 
 echo "🎥 Configuring persistent Jitsi state..."
+
 mkdir -p "${local_container_cache}/.jitsi-meet-cfg"
 
-rm -rf "${jitsi_dir}"
+rm -rf "${local_docker_jitsi_meet_dir}"
 ln -sfn \
-  "${local_container_cache}/docker-jitsi-meet" \
-  "${jitsi_dir}"
+  "${local_container_cache}/jitsi" \
+  "${local_docker_jitsi_meet_dir}"
 
 rm -rf "${HOME}/.jitsi-meet-cfg"
 ln -sfn \
@@ -78,26 +88,19 @@ fi
 mkdir -p "${HOME}/.bashrc.d"
 cat <<EOF > "${HOME}/.bashrc.d/200-jitsi.sh"
 export DOCKER_HOST=unix:///run/user/${LOCAL_USER_ID:-1000}/docker.sock
-export DOCKER_CONFIG=${local_container_cache}/.docker
-export LOCAL_JITSI_DIR=${jitsi_dir}
+export CONTAINER_CACHE=${local_container_cache}
+export DOCKER_CONFIG=\${CONTAINER_CACHE}/.docker
+export LOCAL_DOCKER_JITSI_DIR=${local_docker_jitsi_meet_dir}
 export JITSI_DOMAIN=${jitsi_domain}
 EOF
 
-git_config_global=${HOME}/.gitconfig
-if [ -f "${git_config_global}" ]; then
-  mkdir -p "${local_container_cache}/git"
-  rsync -a "${git_config_global}" "${local_container_cache}/git/"
-  rm -f "${git_config_global}"
-  ln -sfn "${local_container_cache}/git/.gitconfig" "${git_config_global}"
-fi
-
-if [ ! -d "${jitsi_dir}/.git" ]; then
-  rm -rf "${jitsi_dir}"
+if [ ! -d "${local_container_cache}/jitsi/.git" ]; then
+  rm -rf "${local_container_cache}/jitsi"
   echo "⬇️ Cloning docker-jitsi-meet..."
-  git clone https://github.com/jitsi/docker-jitsi-meet.git "${jitsi_dir}"
+  git clone https://github.com/jitsi/docker-jitsi-meet.git "${local_container_cache}/jitsi"
 fi
 
-cd "${jitsi_dir}"
+cd "${local_docker_jitsi_meet_dir}"
 
 jitsi_commit="${JITSI_COMMIT:-}"
 
@@ -136,6 +139,7 @@ set_env_value XMPP_SERVER "prosody"
 set_env_value XMPP_BOSH_URL_BASE "http://prosody:5280"
 set_env_value JICOFO_AUTH_USER "focus"
 set_env_value JVB_AUTH_USER "jvb"
+set_env_value JVB_PORT "${JVB_PORT:-10000}"
 set_env_value ENABLE_XMPP_WEBSOCKET "1"
 
 mkdir -p \
@@ -151,6 +155,8 @@ mkdir -p \
 if ! grep -q '^JICOFO_AUTH_PASSWORD=.' .env 2>/dev/null; then
   echo "🔑 Generating Jitsi secrets..."
   ./gen-passwords.sh
+else
+  echo "🔐 Reusing existing Jitsi secrets from .env"
 fi
 
 if git diff --quiet; then

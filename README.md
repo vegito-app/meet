@@ -143,7 +143,7 @@ The deployment can be customized using environment variables.
 | `HTTPS_PORT` | HTTPS port exposed by the web container. |
 | `TZ` | Time zone used by containers. |
 | `CONTAINER_CACHE` | Root cache directory persisted inside Docker volumes. |
-| `LOCAL_JITSI_DIR` | Location of the docker-jitsi-meet checkout. |
+| `LOCAL_DOCKER_JITSI_DIR` | Location of the docker-jitsi-meet checkout. |
 | `JITSI_CONFIG_DIR` | Location of persistent Jitsi configuration. |
 
 ### Advanced XMPP variables
