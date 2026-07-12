@@ -1,0 +1,24 @@
+services:
+  jitsi-openid:
+    image: mod242/jitsi-go-openid:latest
+
+    environment:
+
+      - JITSI_SECRET # Must match the jwt_secret from your Jitsi configuration
+      - JITSI_URL # Base URL of your Jitsi instance
+      - JITSI_SUB # Must match the JWT_APP_ID from your Jitsi configuration
+      - ISSUER_BASE_URL # Base URL of your OpenID Connect provider
+      - BASE_URL # Public base URL of this application (should run behind a reverse proxy)
+      - CLIENT_ID # Client ID from your OAuth provider
+      - SECRET # Client secret from your OAuth provider
+      - PREJOIN # Whether the prejoin page should be displayed again after authentication
+      - DEEPLINK # Whether the callback should use a deep link for redirect to ensure the originating client (Desktop, iOS, Android) is used
+      - NAME_KEY #
+
+    expose:
+      - 3001
+
+    restart: unless-stopped
+
+    networks:
+      - meet.jitsi

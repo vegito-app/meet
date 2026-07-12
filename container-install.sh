@@ -92,6 +92,7 @@ export CONTAINER_CACHE=${local_container_cache}
 export DOCKER_CONFIG=\${CONTAINER_CACHE}/.docker
 export LOCAL_DOCKER_JITSI_DIR=${local_docker_jitsi_meet_dir}
 export JITSI_DOMAIN=${jitsi_domain}
+export JITSI_CONFIG_DIR=${jitsi_config_dir}
 EOF
 
 if [ ! -d "${local_container_cache}/jitsi/.git" ]; then
@@ -118,8 +119,12 @@ fi
 set_env_value() {
   local key="$1"
   local value="$2"
+  escaped_value=$(
+    printf '%s' "$value" |
+    sed 's/[&|]/\\&/g'
+  )
   if grep -qE "^${key}=" .env; then
-    sed -i "s|^${key}=.*|${key}=${value}|" .env
+    sed -i "s|^${key}=.*|${key}=${escaped_value}|" .env
   else
     printf '\n%s=%s\n' "${key}" "${value}" >> .env
   fi
@@ -139,8 +144,40 @@ set_env_value XMPP_SERVER "prosody"
 set_env_value XMPP_BOSH_URL_BASE "http://prosody:5280"
 set_env_value JICOFO_AUTH_USER "focus"
 set_env_value JVB_AUTH_USER "jvb"
+
 set_env_value JVB_PORT "${JVB_PORT:-10000}"
 set_env_value ENABLE_XMPP_WEBSOCKET "1"
+
+# -----------------------------------------------------------------------------
+# OpenID Connect (Authentik) via jitsi-go-openid
+# -----------------------------------------------------------------------------
+
+jitsi_public_url="${PUBLIC_URL:-https://${jitsi_domain}:${HTTPS_PORT:-8443}}"
+jitsi_jwt_app_id="${JITSI_JWT_APP_ID:-jitsi}"
+jitsi_jwt_secret="${JITSI_JWT_SECRET:-$(openssl rand -hex 32)}"
+
+# docker-jitsi-meet
+set_env_value ENABLE_AUTH "1"
+set_env_value ENABLE_GUESTS "1"
+set_env_value AUTH_TYPE "jwt"
+set_env_value JWT_APP_ID "${jitsi_jwt_app_id}"
+set_env_value JWT_APP_SECRET "${jitsi_jwt_secret}"
+set_env_value JWT_ACCEPTED_ISSUERS "jitsi"
+set_env_value JWT_ACCEPTED_AUDIENCES "jitsi"
+set_env_value TOKEN_AUTH_URL \
+  "${jitsi_public_url}/jitsi-openid/authenticate?state={state}&room={room}"
+
+# jitsi-go-openid
+set_env_value JITSI_SECRET "${jitsi_jwt_secret}"
+set_env_value JITSI_URL "${jitsi_public_url}"
+set_env_value JITSI_SUB "${jitsi_jwt_app_id}"
+set_env_value ISSUER_BASE_URL "${JITSI_OIDC_ISSUER_BASE_URL:-https://auth.vegito.app/application/o/jitsi/}"
+set_env_value BASE_URL "${jitsi_public_url}/jitsi-openid"
+set_env_value CLIENT_ID "${JITSI_OIDC_CLIENT_ID:-jitsi}"
+set_env_value SECRET "${JITSI_OIDC_CLIENT_SECRET:-}"
+set_env_value PREJOIN "false"
+set_env_value DEEPLINK "true"
+set_env_value NAME_KEY "name"
 
 mkdir -p \
   "${jitsi_config_dir}/web" \
