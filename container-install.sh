@@ -14,15 +14,16 @@ check_success() {
 
 trap check_success EXIT
 
-local_container_cache=${CONTAINER_CACHE:-${HOME}/.container/jitsi}
+local_container_cache=${JITSI_DATA_DIR:-${HOME}/.container/jitsi}
 
-local_docker_jitsi_meet_dir=${LOCAL_DOCKER_JITSI_DIR:-${local_container_cache}/docker-jitsi-meet}
+jitsi_worktree=${JITSI_WORKTREE:-${PWD}/.docker-jitsi-meet}
 
 mkdir -p "${local_container_cache}"
 
 echo "📦 Jitsi cache directory: ${local_container_cache}"
 
-jitsi_config_dir=${local_container_cache}/.jitsi-meet-cfg
+jitsi_config_dir=${JITSI_CONFIG_DIR:-${local_container_cache}/config}
+
 jitsi_domain=${JITSI_DOMAIN:-meet.vegito.app}
 
 echo "📁 Jitsi config directory: ${jitsi_config_dir}"
@@ -30,7 +31,7 @@ echo "🌐 Jitsi domain: ${jitsi_domain}"
 
 mkdir -p "${local_container_cache}/.docker"
 mkdir -p "${local_container_cache}/dockerd"
-mkdir -p "${local_container_cache}/jitsi"
+mkdir -p "${jitsi_worktree}"
 
 mkdir -p "${HOME}/.local/share"
 
@@ -47,20 +48,15 @@ ln -sfn "${local_container_cache}/.bash_history" "${bash_history_path}"
 
 echo "🎥 Configuring persistent Jitsi state..."
 
-mkdir -p "${local_container_cache}/.jitsi-meet-cfg"
-
-rm -rf "${local_docker_jitsi_meet_dir}"
-ln -sfn \
-  "${local_container_cache}/jitsi" \
-  "${local_docker_jitsi_meet_dir}"
+mkdir -p "${local_container_cache}/config"
 
 rm -rf "${HOME}/.jitsi-meet-cfg"
 ln -sfn \
-  "${local_container_cache}/.jitsi-meet-cfg" \
+  "${jitsi_config_dir}" \
   "${HOME}/.jitsi-meet-cfg"
 
 cert_dir="/etc/letsencrypt/live/${jitsi_domain}"
-jitsi_cert_dir="${HOME}/.jitsi-meet-cfg/web/keys"
+jitsi_cert_dir="${HOME}/.jitsi/web/keys"
 
 mkdir -p "${jitsi_cert_dir}"
 
@@ -88,20 +84,19 @@ fi
 mkdir -p "${HOME}/.bashrc.d"
 cat <<EOF > "${HOME}/.bashrc.d/200-jitsi.sh"
 export DOCKER_HOST=unix:///run/user/${LOCAL_USER_ID:-1000}/docker.sock
-export CONTAINER_CACHE=${local_container_cache}
-export DOCKER_CONFIG=\${CONTAINER_CACHE}/.docker
-export LOCAL_DOCKER_JITSI_DIR=${local_docker_jitsi_meet_dir}
+export JITSI_DATA_DIR=${local_container_cache}
+export DOCKER_CONFIG=${JITSI_DATA_DIR}/.docker
+export JITSI_WORKTREE=${jitsi_worktree}
 export JITSI_DOMAIN=${jitsi_domain}
-export JITSI_CONFIG_DIR=${jitsi_config_dir}
 EOF
 
-if [ ! -d "${local_container_cache}/jitsi/.git" ]; then
-  rm -rf "${local_container_cache}/jitsi"
+if [ ! -d "${jitsi_worktree}/.git" ]; then
+  rm -rf "${jitsi_worktree}"
   echo "⬇️ Cloning docker-jitsi-meet..."
-  git clone https://github.com/jitsi/docker-jitsi-meet.git "${local_container_cache}/jitsi"
+  git clone https://github.com/jitsi/docker-jitsi-meet.git "${jitsi_worktree}"
 fi
 
-cd "${local_docker_jitsi_meet_dir}"
+cd "${jitsi_worktree}"
 
 jitsi_commit="${JITSI_COMMIT:-}"
 

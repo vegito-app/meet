@@ -31,7 +31,7 @@ done
 
 echo "✅ Rootless Docker is ready."
 
-cd "${LOCAL_DOCKER_JITSI_DIR:-${HOME}/docker-jitsi-meet}"
+cd "${JITSI_WORKTREE:-${HOME}/docker-jitsi-meet}"
 
 # Forward Docker DIND Rootless socket
 socat TCP-LISTEN:2376,fork UNIX-CONNECT:/run/user/1000/docker/docker.sock > /tmp/socat-docker-2376.log 2>&1 &
@@ -39,7 +39,7 @@ bg_pids+=("$!")
 
 docker_compose="docker compose \
  -f docker-compose.yml \
- -f ../../oidc/docker-compose.yml"
+ -f ../oidc/docker-compose.yml"
 
 echo "🧹 Removing previous inner Jitsi stack if present..."
 ${docker_compose} down --remove-orphans || true
@@ -94,8 +94,12 @@ done
 jitsi_web_nginx_custom_config_dir="${JITSI_CONFIG_DIR}/web/nginx-custom"
 mkdir -p ${jitsi_web_nginx_custom_config_dir}
 
-grep -q "location ^~ /jitsi-openid/" ${jitsi_web_nginx_custom_config_dir}/oidc.conf" || \
-cat <<EOF > "${jitsi_web_nginx_custom_config_dir}/oidc.conf"
+jitsi_oidc_config=${jitsi_web_nginx_custom_config_dir}/oidc.conf
+
+if ! grep -q "location ^~ /jitsi-openid/" \
+    "${jitsi_oidc_config}" 2>/dev/null; then
+
+cat <<'EOF' > "${jitsi_oidc_config}"
 # OIDC configuration for Jitsi Meet.
 location ^~ /jitsi-openid/ {
     proxy_pass http://jitsi-openid:3001/;
@@ -108,6 +112,8 @@ location ^~ /jitsi-openid/ {
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 EOF
+
+fi
 
 ${docker_compose} exec web nginx -t
 ${docker_compose} exec web nginx -s reload

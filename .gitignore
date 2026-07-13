@@ -7,3 +7,6 @@ _*
 .env.*
 !.env.example
 !.env.vegito-app
+.docker-jitsi-meet
+._*
+_*
