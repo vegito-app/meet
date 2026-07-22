@@ -173,6 +173,7 @@ set_env_value SECRET "${JITSI_OIDC_CLIENT_SECRET:-}"
 set_env_value PREJOIN "false"
 set_env_value DEEPLINK "true"
 set_env_value NAME_KEY "name"
+set_env_value JVB_ADVERTISE_IPS "${JVB_ADVERTISE_IPS}"
 
 mkdir -p \
   "${jitsi_config_dir}/web" \
